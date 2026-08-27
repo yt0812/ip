@@ -24,7 +24,7 @@ public class Dobby {
         System.out.println(separator);
         System.out.println(banner);
         System.out.println("Hello! I'm Dobby, your mildly magical command goblin.");
-        System.out.println("What quest shall we tackle today?");
+        System.out.println("What adventure shall we get into today?");
 
         Scanner scanner = new Scanner(System.in);
         while (scanner.hasNextLine()) {
@@ -32,7 +32,7 @@ public class Dobby {
 
             if (command.equals("bye")) {
                 System.out.println("    " + separator);
-                System.out.println("     Bye! May your bugs be tiny and your code be mighty!");
+                System.out.println("     Bye! May your day be merry and your adventures be mighty!");
                 System.out.println("    " + separator);
                 break;
             }
