@@ -39,6 +39,16 @@ methods require descriptive Javadoc subject to the standard's stated exceptions.
 
 Ensure that Java 25 is used when running the application or build tasks. On macOS, use `sdk use java 25.0.3.fx-zulu` to switch to Java 25 if needed.
 
+## Git coding standard
+
+All future commits in this project MUST follow the project-local
+[seedu-git-standard](.agents/skills/seedu-git-standard/SKILL.md) skill, which is based
+on the [SE-EDU Git conventions](https://se-education.org/guides/conventions/git.html).
+Before committing, use an imperative, capitalized, period-free subject; keep it to
+50 characters where possible and never over 72 characters. Add a focused, 72-column
+body explaining WHAT and WHY for non-trivial commits. Use meaningful kebab-case branch
+names. Do not commit or push unless explicitly asked.
+
 ## Git
 
 Use lightweight tags unless the user requests an annotated tag.
