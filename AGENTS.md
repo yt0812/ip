@@ -24,6 +24,17 @@ Unless the user says otherwise, assume that you are assisting a student working 
 
 # Project-specific requirements
 
+## Java coding standard
+
+All Java code in this project MUST follow the project-local
+[seedu-java-coding-standard](.agents/skills/seedu-java-coding-standard/SKILL.md)
+skill, which is based on the [SE-EDU Java coding standard (basic + intermediate)](https://se-education.org/guides/conventions/java/intermediate.html).
+Apply it to new code, edits, and refactors; preserve existing behavior unless the
+user requests otherwise. In particular, every class must be in a lowercase package,
+imports must be explicit and consistently ordered, braces are required for all loop
+and conditional bodies, lines must not exceed 120 characters, and public classes and
+methods require descriptive Javadoc subject to the standard's stated exceptions.
+
 ## Java version:
 
 Ensure that Java 25 is used when running the application or build tasks. On macOS, use `sdk use java 25.0.3.fx-zulu` to switch to Java 25 if needed.
