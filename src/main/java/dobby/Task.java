@@ -1,3 +1,5 @@
+package dobby;
+
 /**
  * Represents one quest in Dobby's task list.
  */
@@ -12,7 +14,7 @@ public class Task {
     /**
      * Creates a new unfinished task.
      *
-     * @param description the task's description
+     * @param description the task's description.
      */
     public Task(String description) {
         this.description = description;

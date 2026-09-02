@@ -1,3 +1,5 @@
+package dobby;
+
 import java.util.Scanner;
 
 /**
@@ -14,10 +16,14 @@ public class Dobby {
     /** The line printed between Dobby's messages. */
     private static final String SEPARATOR = "____________________________________________________________";
 
+    /** Creates a Dobby chatbot instance. */
+    public Dobby() {
+    }
+
     /**
      * Displays the greeting, handles commands, and exits when the user enters {@code bye}.
      *
-     * @param args command-line arguments, which are not used
+     * @param args command-line arguments, which are not used.
      */
     public static void main(String[] args) {
         String banner = "     *        .        *        .        *\n"
@@ -74,7 +80,7 @@ public class Dobby {
     /**
      * Prints one response surrounded by the standard separator.
      *
-     * @param message the response to print
+     * @param message the response to print.
      */
     private static void printMessage(String message) {
         System.out.println("    " + SEPARATOR);
@@ -85,8 +91,8 @@ public class Dobby {
     /**
      * Prints all stored tasks in the order in which they were entered.
      *
-     * @param tasks the in-memory task array
-     * @param taskCount the number of occupied positions in {@code tasks}
+     * @param tasks the in-memory task array.
+     * @param taskCount the number of occupied positions in {@code tasks}.
      */
     private static void printTaskList(Task[] tasks, int taskCount) {
         System.out.println("    " + SEPARATOR);
@@ -107,9 +113,9 @@ public class Dobby {
     /**
      * Marks the task selected by a {@code mark <number>} command as done.
      *
-     * @param command the complete command entered by the user
-     * @param tasks the in-memory task array
-     * @param taskCount the number of occupied positions in {@code tasks}
+     * @param command the complete command entered by the user.
+     * @param tasks the in-memory task array.
+     * @param taskCount the number of occupied positions in {@code tasks}.
      */
     private static void markTask(String command, Task[] tasks, int taskCount) {
         String taskNumberText = command.substring("mark ".length()).trim();
@@ -141,9 +147,9 @@ public class Dobby {
     /**
      * Reverses the done status of the task selected by an {@code unmark <number>} command.
      *
-     * @param command the complete command entered by the user
-     * @param tasks the in-memory task array
-     * @param taskCount the number of occupied positions in {@code tasks}
+     * @param command the complete command entered by the user.
+     * @param tasks the in-memory task array.
+     * @param taskCount the number of occupied positions in {@code tasks}.
      */
     private static void unmarkTask(String command, Task[] tasks, int taskCount) {
         String taskNumberText = command.substring("unmark ".length()).trim();
