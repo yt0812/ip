@@ -1,7 +1,11 @@
 package dobby;
 
 /**
- * Represents one quest in Dobby's task list.
+ * Represents a task in Dobby's task list.
+ *
+ * <p>A plain {@code Task} is treated as a ToDo for backwards compatibility
+ * with the original command interface. Specialized task types override
+ * {@link #toString()} to add their own display details.
  */
 public class Task {
 
@@ -28,6 +32,16 @@ public class Task {
      */
     public String getStatusIcon() {
         return isDone ? "X" : " ";
+    }
+
+    /**
+     * Returns this task in the compact format used by the user interface.
+     *
+     * @return the ToDo type icon, completion icon, and description
+     */
+    @Override
+    public String toString() {
+        return "[T][" + getStatusIcon() + "] " + description;
     }
 
     /** Marks this task as completed. */
