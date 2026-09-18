@@ -4,7 +4,7 @@
 
 - Application: `dobby.Dobby`.
 - Java version: 25.
-- Compile command: `javac -d <temporary-build-dir> src\main\java\dobby\Task.java src\main\java\dobby\Dobby.java`.
+- Compile command: `javac -d <temporary-build-dir> src\main\java\dobby\*.java`.
 - Run command: `java -cp <temporary-build-dir> dobby.Dobby`.
 - Input format: one command per line, in the order shown in each test case.
 - Typed task syntax: `todo <description>`, `deadline <description> /by <date/time>`, and `event <description> /from <start> /to <end>`.
@@ -54,7 +54,7 @@ What adventure shall we get into today?
 - Inputs (one command per line):
 
 ```text
-finish homework
+todo finish homework
 list
 bye
 ```
@@ -74,7 +74,9 @@ ____________________________________________________________
 Hello! I'm Dobby, your mildly magical command goblin.
 What adventure shall we get into today?
     ____________________________________________________________
-     Quest accepted! Added to your magical task scroll: finish homework
+     Huzzah! A new quest has joined your magical task scroll:
+       [T][ ] finish homework
+     The quest scroll now holds 1 quest. Keep adventuring!
     ____________________________________________________________
     ____________________________________________________________
      Behold, brave adventurer! Here are your mighty quests:
@@ -91,7 +93,7 @@ What adventure shall we get into today?
 - Inputs (one command per line):
 
 ```text
-pack lunch
+todo pack lunch
 mark 1
 list
 unmark 1
@@ -114,7 +116,9 @@ ____________________________________________________________
 Hello! I'm Dobby, your mildly magical command goblin.
 What adventure shall we get into today?
     ____________________________________________________________
-     Quest accepted! Added to your magical task scroll: pack lunch
+     Huzzah! A new quest has joined your magical task scroll:
+       [T][ ] pack lunch
+     The quest scroll now holds 1 quest. Keep adventuring!
     ____________________________________________________________
     ____________________________________________________________
      Nice! Quest progress unlocked - I've marked this task as done:
@@ -163,7 +167,7 @@ ____________________________________________________________
 Hello! I'm Dobby, your mildly magical command goblin.
 What adventure shall we get into today?
     ____________________________________________________________
-     Please tell me which task number to mark - Dobby cannot read that quest rune!
+     The mark command needs a task number. Use mark <number>, for example mark 1.
     ____________________________________________________________
     ____________________________________________________________
      Bye for now! Dobby is off to polish the quest scrolls. Stay mighty!
@@ -297,6 +301,188 @@ What adventure shall we get into today?
      Huzzah! A new quest has joined your magical task scroll:
        [D][ ] do homework (by: no idea :-p)
      The quest scroll now holds 1 quest. Keep adventuring!
+    ____________________________________________________________
+    ____________________________________________________________
+     Bye for now! Dobby is off to polish the quest scrolls. Stay mighty!
+    ____________________________________________________________
+```
+
+### TC-008 — Reject a ToDo without a description
+
+- Aim: Verify that an empty ToDo produces an error and does not terminate the session.
+- Inputs (one command per line):
+
+```text
+todo
+bye
+```
+
+- Expected output:
+
+```text
+____________________________________________________________
+     *        .        *        .        *
+      ____          _      _
+     |  _ \   ___  | |__  | |__   _   _
+     | | | | / _ \ | '_ \ | '_ \ | | | |
+     | |_| || (_) || |_) || |_) || |_| |
+     |____/  \___/ |_.__/ |_.__/  \__, |
+                                  |___/
+     .        *        .        *        .
+Hello! I'm Dobby, your mildly magical command goblin.
+What adventure shall we get into today?
+    ____________________________________________________________
+     A ToDo needs a description. Use todo <description>, for example todo read book.
+    ____________________________________________________________
+    ____________________________________________________________
+     Bye for now! Dobby is off to polish the quest scrolls. Stay mighty!
+    ____________________________________________________________
+```
+
+### TC-009 — Reject an unknown command
+
+- Aim: Verify that an unsupported command produces a helpful error and does not terminate the session.
+- Inputs (one command per line):
+
+```text
+blah
+bye
+```
+
+- Expected output:
+
+```text
+____________________________________________________________
+     *        .        *        .        *
+      ____          _      _
+     |  _ \   ___  | |__  | |__   _   _
+     | | | | / _ \ | '_ \ | '_ \ | | | |
+     | |_| || (_) || |_) || |_) || |_| |
+     |____/  \___/ |_.__/ |_.__/  \__, |
+                                  |___/
+     .        *        .        *        .
+Hello! I'm Dobby, your mildly magical command goblin.
+What adventure shall we get into today?
+    ____________________________________________________________
+     I don't know that command. Try list, todo <description>, deadline <description> /by <date/time>, event <description> /from <start> /to <end>, mark <number>, unmark <number>, or bye.
+    ____________________________________________________________
+    ____________________________________________________________
+     Bye for now! Dobby is off to polish the quest scrolls. Stay mighty!
+    ____________________________________________________________
+```
+
+### TC-010 — Explain invalid task selectors
+
+- Aim: Verify that invalid mark and unmark selectors explain the required number format.
+- Inputs (one command per line):
+
+```text
+todo write report
+mark 2
+unmark nope
+bye
+```
+
+- Expected output:
+
+```text
+____________________________________________________________
+     *        .        *        .        *
+      ____          _      _
+     |  _ \   ___  | |__  | |__   _   _
+     | | | | / _ \ | '_ \ | '_ \ | | | |
+     | |_| || (_) || |_) || |_) || |_| |
+     |____/  \___/ |_.__/ |_.__/  \__, |
+                                  |___/
+     .        *        .        *        .
+Hello! I'm Dobby, your mildly magical command goblin.
+What adventure shall we get into today?
+    ____________________________________________________________
+     Huzzah! A new quest has joined your magical task scroll:
+       [T][ ] write report
+     The quest scroll now holds 1 quest. Keep adventuring!
+    ____________________________________________________________
+    ____________________________________________________________
+     Task 2 does not exist. Choose a number from 1 to 1.
+    ____________________________________________________________
+    ____________________________________________________________
+     The unmark command needs a task number. Use unmark <number>, for example unmark 1.
+    ____________________________________________________________
+    ____________________________________________________________
+     Bye for now! Dobby is off to polish the quest scrolls. Stay mighty!
+    ____________________________________________________________
+```
+
+### TC-011 — Explain malformed deadline and event commands
+
+- Aim: Verify that malformed typed tasks identify the missing separators or time fields.
+- Inputs (one command per line):
+
+```text
+deadline submit report
+event team meeting /from 2pm
+event team meeting /from  /to 4pm
+bye
+```
+
+- Expected output:
+
+```text
+____________________________________________________________
+     *        .        *        .        *
+      ____          _      _
+     |  _ \   ___  | |__  | |__   _   _
+     | | | | / _ \ | '_ \ | '_ \ | | | |
+     | |_| || (_) || |_) || |_) || |_| |
+     |____/  \___/ |_.__/ |_.__/  \__, |
+                                  |___/
+     .        *        .        *        .
+Hello! I'm Dobby, your mildly magical command goblin.
+What adventure shall we get into today?
+    ____________________________________________________________
+     A deadline needs a description and a due time. Use deadline <description> /by <date/time>.
+    ____________________________________________________________
+    ____________________________________________________________
+     An event needs an end time after /to. Add /to <end> after the start time.
+    ____________________________________________________________
+    ____________________________________________________________
+     An event needs a start time after /from. Add a start time before /to.
+    ____________________________________________________________
+    ____________________________________________________________
+     Bye for now! Dobby is off to polish the quest scrolls. Stay mighty!
+    ____________________________________________________________
+```
+
+### TC-012 — Explain selectors when no tasks exist
+
+- Aim: Verify that mark and unmark explain how to create a task when the list is empty.
+- Inputs (one command per line):
+
+```text
+mark 1
+unmark 1
+bye
+```
+
+- Expected output:
+
+```text
+____________________________________________________________
+     *        .        *        .        *
+      ____          _      _
+     |  _ \   ___  | |__  | |__   _   _
+     | | | | / _ \ | '_ \ | '_ \ | | | |
+     | |_| || (_) || |_) || |_) || |_| |
+     |____/  \___/ |_.__/ |_.__/  \__, |
+                                  |___/
+     .        *        .        *        .
+Hello! I'm Dobby, your mildly magical command goblin.
+What adventure shall we get into today?
+    ____________________________________________________________
+     There are no tasks to mark. Add one with todo <description> first.
+    ____________________________________________________________
+    ____________________________________________________________
+     There are no tasks to unmark. Add one with todo <description> first.
     ____________________________________________________________
     ____________________________________________________________
      Bye for now! Dobby is off to polish the quest scrolls. Stay mighty!
