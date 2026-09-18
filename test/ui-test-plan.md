@@ -4,7 +4,7 @@
 
 - Application: `dobby.Dobby`.
 - Java version: 25.
-- Compile command: `javac -d <temporary-build-dir> src\main\java\dobby\*.java`.
+- Compile command: `javac -d <temporary-build-dir> src\main\java\dobby\Dobby.java src\main\java\dobby\task\*.java src\main\java\dobby\exception\*.java`.
 - Run command: `java -cp <temporary-build-dir> dobby.Dobby`.
 - Input format: one command per line, in the order shown in each test case.
 - Typed task syntax: `todo <description>`, `deadline <description> /by <date/time>`, and `event <description> /from <start> /to <end>`.

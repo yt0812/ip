@@ -1,4 +1,4 @@
-package dobby;
+package dobby.exception;
 
 /**
  * Represents an input error that Dobby can explain to the user.
