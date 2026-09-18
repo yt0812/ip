@@ -1,5 +1,6 @@
 package dobby;
 
+import java.util.ArrayList;
 import java.util.Scanner;
 
 import dobby.exception.DobbyException;
@@ -59,8 +60,7 @@ public class Dobby {
      * Reads commands and maintains the task list for the current session.
      */
     private static void runCommandLoop() {
-        Task[] tasks = new Task[MAX_TASKS];
-        int taskCount = 0;
+        ArrayList<Task> tasks = new ArrayList<>();
 
         Scanner scanner = new Scanner(System.in);
         while (scanner.hasNextLine()) {
@@ -71,40 +71,42 @@ public class Dobby {
                 return;
             }
 
-            taskCount = processCommand(command, tasks, taskCount);
+            processCommand(command, tasks);
         }
     }
 
     /**
-     * Processes one command and returns the updated number of stored tasks.
+     * Processes one command and updates the stored tasks when necessary.
      *
      * @param command the complete command entered by the user.
-     * @param tasks the in-memory task array.
-     * @param taskCount the number of occupied positions in {@code tasks}.
-     * @return the updated number of stored tasks
+     * @param tasks the in-memory task list.
      */
-    private static int processCommand(String command, Task[] tasks, int taskCount) {
+    private static void processCommand(String command, ArrayList<Task> tasks) {
         try {
             if (command.equals("list")) {
-                printTaskList(tasks, taskCount);
-                return taskCount;
+                printTaskList(tasks);
+                return;
+            }
+
+            if (command.equals("delete") || command.startsWith("delete ")) {
+                deleteTask(command, tasks);
+                return;
             }
 
             if (command.equals("mark") || command.startsWith("mark ")) {
-                markTask(command, tasks, taskCount);
-                return taskCount;
+                markTask(command, tasks);
+                return;
             }
 
             if (command.equals("unmark") || command.startsWith("unmark ")) {
-                unmarkTask(command, tasks, taskCount);
-                return taskCount;
+                unmarkTask(command, tasks);
+                return;
             }
 
             Task task = parseTask(command);
-            return addTask(task, tasks, taskCount);
+            addTask(task, tasks);
         } catch (DobbyException exception) {
             printMessage(exception.getMessage());
-            return taskCount;
         }
     }
 
@@ -112,21 +114,17 @@ public class Dobby {
      * Adds a parsed task when the task pouch still has room.
      *
      * @param task the parsed task to add.
-     * @param tasks the in-memory task array.
-     * @param taskCount the number of occupied positions in {@code tasks}.
-     * @return the updated number of stored tasks
+     * @param tasks the in-memory task list.
      */
-    private static int addTask(Task task, Task[] tasks, int taskCount) throws DobbyException {
-        if (taskCount >= MAX_TASKS) {
+    private static void addTask(Task task, ArrayList<Task> tasks) throws DobbyException {
+        if (tasks.size() >= MAX_TASKS) {
             throw new DobbyException("Your task pouch is full at 100 quests. Start a new Dobby session before "
                     + "adding another quest.");
         }
 
-        tasks[taskCount] = task;
-        taskCount++;
+        tasks.add(task);
 
-        printTaskAdded(task, taskCount);
-        return taskCount;
+        printTaskAdded(task, tasks.size());
     }
 
     /**
@@ -143,18 +141,17 @@ public class Dobby {
     /**
      * Prints all stored tasks in the order in which they were entered.
      *
-     * @param tasks the in-memory task array.
-     * @param taskCount the number of occupied positions in {@code tasks}.
+     * @param tasks the in-memory task list.
      */
-    private static void printTaskList(Task[] tasks, int taskCount) {
+    private static void printTaskList(ArrayList<Task> tasks) {
         System.out.println("    " + SEPARATOR);
         System.out.println("     Behold, brave adventurer! Here are your mighty quests:");
 
-        if (taskCount == 0) {
+        if (tasks.isEmpty()) {
             System.out.println("     Your task pouch is empty - add a quest and let the adventure begin!");
         } else {
-            for (int i = 0; i < taskCount; i++) {
-                System.out.println("     " + (i + 1) + "." + tasks[i]);
+            for (int i = 0; i < tasks.size(); i++) {
+                System.out.println("     " + (i + 1) + "." + tasks.get(i));
             }
         }
 
@@ -162,19 +159,38 @@ public class Dobby {
     }
 
     /**
+     * Removes the task selected by a {@code delete <number>} command.
+     *
+     * @param command the complete command entered by the user.
+     * @param tasks the in-memory task list.
+     * @throws DobbyException when the selected task number is missing, malformed, or out of range.
+     */
+    private static void deleteTask(String command, ArrayList<Task> tasks) throws DobbyException {
+        int taskIndex = parseTaskIndex(command, "delete", tasks.size());
+        Task removedTask = tasks.remove(taskIndex);
+        String questLabel = tasks.size() == 1 ? "quest" : "quests";
+
+        System.out.println("    " + SEPARATOR);
+        System.out.println("     Poof! This quest has vanished from the magical task scroll:");
+        System.out.println("       " + removedTask);
+        System.out.println("     The quest scroll now holds " + tasks.size() + " " + questLabel
+                + ". Onward, brave adventurer!");
+        System.out.println("    " + SEPARATOR);
+    }
+
+    /**
      * Marks the task selected by a {@code mark <number>} command as done.
      *
      * @param command the complete command entered by the user.
-     * @param tasks the in-memory task array.
-     * @param taskCount the number of occupied positions in {@code tasks}.
+     * @param tasks the in-memory task list.
      */
-    private static void markTask(String command, Task[] tasks, int taskCount) throws DobbyException {
-        int taskIndex = parseTaskIndex(command, "mark", taskCount);
-        tasks[taskIndex].markAsDone();
+    private static void markTask(String command, ArrayList<Task> tasks) throws DobbyException {
+        int taskIndex = parseTaskIndex(command, "mark", tasks.size());
+        tasks.get(taskIndex).markAsDone();
 
         System.out.println("    " + SEPARATOR);
         System.out.println("     Nice! Quest progress unlocked - I've marked this task as done:");
-        System.out.println("       " + tasks[taskIndex]);
+        System.out.println("       " + tasks.get(taskIndex));
         System.out.println("    " + SEPARATOR);
     }
 
@@ -182,22 +198,21 @@ public class Dobby {
      * Reverses the done status of the task selected by an {@code unmark <number>} command.
      *
      * @param command the complete command entered by the user.
-     * @param tasks the in-memory task array.
-     * @param taskCount the number of occupied positions in {@code tasks}.
+     * @param tasks the in-memory task list.
      */
-    private static void unmarkTask(String command, Task[] tasks, int taskCount) throws DobbyException {
-        int taskIndex = parseTaskIndex(command, "unmark", taskCount);
-        tasks[taskIndex].markAsUndone();
+    private static void unmarkTask(String command, ArrayList<Task> tasks) throws DobbyException {
+        int taskIndex = parseTaskIndex(command, "unmark", tasks.size());
+        tasks.get(taskIndex).markAsUndone();
 
         System.out.println("    " + SEPARATOR);
         System.out.println("     Plot twist! This quest is back on the adventure board -");
         System.out.println("     I've marked this task as not done yet:");
-        System.out.println("       " + tasks[taskIndex]);
+        System.out.println("       " + tasks.get(taskIndex));
         System.out.println("    " + SEPARATOR);
     }
 
     /**
-     * Parses and validates the task number in a mark or unmark command.
+     * Parses and validates the task number in a task-selection command.
      *
      * @param command the complete command entered by the user.
      * @param action the command name being validated.
@@ -254,7 +269,8 @@ public class Dobby {
 
         throw new DobbyException(
                 "I don't know that command. Try list, todo <description>, deadline <description> /by <date/time>, "
-                        + "event <description> /from <start> /to <end>, mark <number>, unmark <number>, or bye.");
+                        + "event <description> /from <start> /to <end>, mark <number>, unmark <number>, "
+                        + "delete <number>, or bye.");
     }
 
     /**
