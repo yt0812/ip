@@ -78,54 +78,48 @@ public class Dobby {
      * @return the updated number of stored tasks
      */
     private static int processCommand(String command, Task[] tasks, int taskCount) {
-        if (command.equals("list")) {
-            printTaskList(tasks, taskCount);
+        try {
+            if (command.equals("list")) {
+                printTaskList(tasks, taskCount);
+                return taskCount;
+            }
+
+            if (command.equals("mark") || command.startsWith("mark ")) {
+                markTask(command, tasks, taskCount);
+                return taskCount;
+            }
+
+            if (command.equals("unmark") || command.startsWith("unmark ")) {
+                unmarkTask(command, tasks, taskCount);
+                return taskCount;
+            }
+
+            Task task = parseTask(command);
+            return addTask(task, tasks, taskCount);
+        } catch (DobbyException exception) {
+            printMessage(exception.getMessage());
             return taskCount;
         }
-
-        if (command.startsWith("mark ")) {
-            markTask(command, tasks, taskCount);
-            return taskCount;
-        }
-
-        if (command.startsWith("unmark ")) {
-            unmarkTask(command, tasks, taskCount);
-            return taskCount;
-        }
-
-        Task task = parseTask(command);
-
-        if (task == null) {
-            return taskCount;
-        }
-
-        return addTask(task, command, tasks, taskCount);
     }
 
     /**
      * Adds a parsed task when the task pouch still has room.
      *
      * @param task the parsed task to add.
-     * @param command the original command used to create the task.
      * @param tasks the in-memory task array.
      * @param taskCount the number of occupied positions in {@code tasks}.
      * @return the updated number of stored tasks
      */
-    private static int addTask(Task task, String command, Task[] tasks, int taskCount) {
+    private static int addTask(Task task, Task[] tasks, int taskCount) throws DobbyException {
         if (taskCount >= MAX_TASKS) {
-            printMessage("Your task pouch is bursting at the seams! Dobby can only carry 100 quests.");
-            return taskCount;
+            throw new DobbyException("Your task pouch is full at 100 quests. Start a new Dobby session before "
+                    + "adding another quest.");
         }
 
         tasks[taskCount] = task;
         taskCount++;
 
-        if (isTypedTaskCommand(command)) {
-            printTaskAdded(task, taskCount);
-        } else {
-            printMessage("Quest accepted! Added to your magical task scroll: " + command);
-        }
-
+        printTaskAdded(task, taskCount);
         return taskCount;
     }
 
@@ -168,24 +162,8 @@ public class Dobby {
      * @param tasks the in-memory task array.
      * @param taskCount the number of occupied positions in {@code tasks}.
      */
-    private static void markTask(String command, Task[] tasks, int taskCount) {
-        String taskNumberText = command.substring("mark ".length()).trim();
-        int taskNumber;
-
-        try {
-            taskNumber = Integer.parseInt(taskNumberText);
-        } catch (NumberFormatException exception) {
-            printMessage("Please tell me which task number to mark - Dobby cannot read that quest rune!");
-            return;
-        }
-
-        if (taskNumber < 1 || taskNumber > taskCount) {
-            printMessage("That quest number is hiding in another dimension! Try a number from 1 to "
-                    + taskCount + ".");
-            return;
-        }
-
-        int taskIndex = taskNumber - 1;
+    private static void markTask(String command, Task[] tasks, int taskCount) throws DobbyException {
+        int taskIndex = parseTaskIndex(command, "mark", taskCount);
         tasks[taskIndex].markAsDone();
 
         System.out.println("    " + SEPARATOR);
@@ -201,24 +179,8 @@ public class Dobby {
      * @param tasks the in-memory task array.
      * @param taskCount the number of occupied positions in {@code tasks}.
      */
-    private static void unmarkTask(String command, Task[] tasks, int taskCount) {
-        String taskNumberText = command.substring("unmark ".length()).trim();
-        int taskNumber;
-
-        try {
-            taskNumber = Integer.parseInt(taskNumberText);
-        } catch (NumberFormatException exception) {
-            printMessage("Please tell me which quest number to unmark - Dobby cannot read that rune!");
-            return;
-        }
-
-        if (taskNumber < 1 || taskNumber > taskCount) {
-            printMessage("That quest number is hiding in another dimension! Try a number from 1 to "
-                    + taskCount + ".");
-            return;
-        }
-
-        int taskIndex = taskNumber - 1;
+    private static void unmarkTask(String command, Task[] tasks, int taskCount) throws DobbyException {
+        int taskIndex = parseTaskIndex(command, "unmark", taskCount);
         tasks[taskIndex].markAsUndone();
 
         System.out.println("    " + SEPARATOR);
@@ -229,16 +191,49 @@ public class Dobby {
     }
 
     /**
+     * Parses and validates the task number in a mark or unmark command.
+     *
+     * @param command the complete command entered by the user.
+     * @param action the command name being validated.
+     * @param taskCount the number of tasks currently stored.
+     * @return the zero-based index selected by the command.
+     * @throws DobbyException when the number is missing, malformed, or out of range.
+     */
+    private static int parseTaskIndex(String command, String action, int taskCount) throws DobbyException {
+        String taskNumberText = command.substring(action.length()).trim();
+        int taskNumber;
+
+        try {
+            taskNumber = Integer.parseInt(taskNumberText);
+        } catch (NumberFormatException exception) {
+            throw new DobbyException("The " + action + " command needs a task number. Use " + action
+                    + " <number>, for example " + action + " 1.");
+        }
+
+        if (taskCount == 0) {
+            throw new DobbyException("There are no tasks to " + action + ". Add one with todo <description> first.");
+        }
+
+        if (taskNumber < 1 || taskNumber > taskCount) {
+            throw new DobbyException("Task " + taskNumber + " does not exist. Choose a number from 1 to "
+                    + taskCount + ".");
+        }
+
+        return taskNumber - 1;
+    }
+
+    /**
      * Creates a task from a user command.
      *
      * <p>Explicit commands use {@code todo}, {@code deadline}, and
-     * {@code event}. A bare line is still accepted as a ToDo so existing users
-     * can continue entering tasks in the original style.
+     * {@code event}. Other input is rejected so Dobby can explain the supported
+     * command formats instead of silently treating a typo as a task.
      *
      * @param command the complete command entered by the user.
-     * @return the parsed task, or {@code null} when the command is invalid
+     * @return the parsed task.
+     * @throws DobbyException when the command is unknown or malformed.
      */
-    private static Task parseTask(String command) {
+    private static Task parseTask(String command) throws DobbyException {
         if (command.equals("todo") || command.startsWith("todo ")) {
             return parseToDo(command);
         }
@@ -251,21 +246,23 @@ public class Dobby {
             return parseEvent(command);
         }
 
-        return new Task(command);
+        throw new DobbyException(
+                "I don't know that command. Try list, todo <description>, deadline <description> /by <date/time>, "
+                        + "event <description> /from <start> /to <end>, mark <number>, unmark <number>, or bye.");
     }
 
     /**
      * Parses an explicit ToDo command.
      *
      * @param command the complete ToDo command.
-     * @return the parsed ToDo, or {@code null} when its description is empty
+     * @return the parsed ToDo.
+     * @throws DobbyException when the ToDo description is empty.
      */
-    private static Task parseToDo(String command) {
+    private static Task parseToDo(String command) throws DobbyException {
         String description = command.substring("todo".length()).trim();
 
         if (description.isEmpty()) {
-            printMessage("A ToDo needs a description before Dobby can add it to the quest scroll!");
-            return null;
+            throw new DobbyException("A ToDo needs a description. Use todo <description>, for example todo read book.");
         }
 
         return new Todo(description);
@@ -275,23 +272,27 @@ public class Dobby {
      * Parses a deadline command using the {@code /by} separator.
      *
      * @param command the complete deadline command.
-     * @return the parsed deadline, or {@code null} when a description or due time is missing
+     * @return the parsed deadline.
+     * @throws DobbyException when the description or due time is missing.
      */
-    private static Task parseDeadline(String command) {
+    private static Task parseDeadline(String command) throws DobbyException {
         String taskDetails = command.substring("deadline".length()).trim();
         int byIndex = taskDetails.lastIndexOf(" /by ");
 
-        if (byIndex <= 0) {
-            printMessage("A deadline needs a description and a due time, such as /by Sunday!");
-            return null;
+        if (byIndex < 0) {
+            throw new DobbyException("A deadline needs a description and a due time. Use deadline <description> "
+                    + "/by <date/time>.");
+        }
+
+        if (byIndex == 0) {
+            throw new DobbyException("A deadline needs a description before /by. Add text before the /by marker.");
         }
 
         String description = taskDetails.substring(0, byIndex).trim();
         String deadline = taskDetails.substring(byIndex + " /by ".length()).trim();
 
         if (deadline.isEmpty()) {
-            printMessage("Dobby needs to know when this deadline is due - try adding a date after /by!");
-            return null;
+            throw new DobbyException("A deadline needs a due time after /by. For example: deadline report /by Friday.");
         }
 
         return new Deadline(description, deadline);
@@ -301,25 +302,43 @@ public class Dobby {
      * Parses an event command using the {@code /from} and {@code /to} separators.
      *
      * @param command the complete event command.
-     * @return the parsed event, or {@code null} when an event detail is missing
+     * @return the parsed event.
+     * @throws DobbyException when an event detail is missing.
      */
-    private static Task parseEvent(String command) {
+    private static Task parseEvent(String command) throws DobbyException {
         String taskDetails = command.substring("event".length()).trim();
         int fromIndex = taskDetails.indexOf(" /from ");
         int toIndex = fromIndex < 0 ? -1 : taskDetails.indexOf(" /to ", fromIndex + " /from ".length());
 
-        if (fromIndex <= 0 || toIndex <= fromIndex + " /from ".length()) {
-            printMessage("An event needs a description, a start time after /from, and an end time after /to!");
-            return null;
+        if (taskDetails.isEmpty()) {
+            throw new DobbyException("An event needs a description, start time, and end time. Use event <description> "
+                    + "/from <start> /to <end>.");
+        }
+
+        if (fromIndex < 0) {
+            throw new DobbyException("An event needs a start time after /from and an end time after /to. Use event "
+                    + "<description> /from <start> /to <end>.");
+        }
+
+        if (fromIndex == 0) {
+            throw new DobbyException("An event needs a description before /from. Add text before the /from marker.");
+        }
+
+        if (toIndex < 0) {
+            throw new DobbyException("An event needs an end time after /to. Add /to <end> after the start time.");
         }
 
         String description = taskDetails.substring(0, fromIndex).trim();
         String start = taskDetails.substring(fromIndex + " /from ".length(), toIndex).trim();
         String end = taskDetails.substring(toIndex + " /to ".length()).trim();
 
+        if (start.isEmpty()) {
+            throw new DobbyException("An event needs a start time after /from. Add a start time before /to.");
+        }
+
         if (end.isEmpty()) {
-            printMessage("Dobby needs to know when this event ends - try adding a time after /to!");
-            return null;
+            throw new DobbyException("An event needs an end time after /to. For example: event meeting /from 2pm "
+                    + "/to 4pm.");
         }
 
         return new Event(description, start, end);
@@ -342,13 +361,4 @@ public class Dobby {
         System.out.println("    " + SEPARATOR);
     }
 
-    /**
-     * Checks whether a command explicitly names one of the supported task types.
-     *
-     * @param command the complete command entered by the user.
-     * @return {@code true} when the command starts with a typed-task keyword
-     */
-    private static boolean isTypedTaskCommand(String command) {
-        return command.startsWith("todo ") || command.startsWith("deadline ") || command.startsWith("event ");
-    }
 }

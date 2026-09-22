@@ -45,6 +45,10 @@ does not affect the UI, the plan may remain unchanged, but the `test-ui` skill m
 still be invoked. Follow the skill's fail-fast behavior and retain the console
 input/output record in the response.
 
+When updating expected console transcripts, copy the runner's output exactly,
+including leading spaces on separators and response lines. Use the test runner's
+record as the source of truth instead of manually reformatting transcript lines.
+
 ## Java version:
 
 Ensure that Java 25 is used when running the application or build tasks. On macOS, use `sdk use java 25.0.3.fx-zulu` to switch to Java 25 if needed.
