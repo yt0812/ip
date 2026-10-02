@@ -1,5 +1,7 @@
 package dobby.task;
 
+import java.time.LocalDate;
+
 /**
  * Represents a task with a specified start and end date or time.
  */
@@ -40,6 +42,24 @@ public class Event extends Task {
      */
     public String getEnd() {
         return end;
+    }
+
+    /**
+     * Returns the parsed start date when the event starts on a recognized date.
+     *
+     * @return the event start date, or {@code null} when the start is free-form text.
+     */
+    public LocalDate getStartDate() {
+        return DateTimeParser.parseDate(start);
+    }
+
+    /**
+     * Returns the parsed end date when the event ends on a recognized date.
+     *
+     * @return the event end date, or {@code null} when the end is free-form text.
+     */
+    public LocalDate getEndDate() {
+        return DateTimeParser.parseDate(end);
     }
 
     @Override

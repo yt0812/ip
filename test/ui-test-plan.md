@@ -10,7 +10,8 @@
 - Test isolation: start each independent test case with a clean working directory or without a saved data file.
 - Input format: one command per line, in the order shown in each test case.
 - Typed task syntax: `todo <description>`, `deadline <description> /by <date/time>`, and `event <description> /from <start> /to <end>`.
-- Date/time text is kept as entered, so natural values such as `Sunday`, `Mon 2pm`, and `11/10/2019 5pm` are valid.
+- Date query syntax: `on <date>` lists deadlines on that date and events whose recognized date range contains it.
+- Unrecognized date/time text is kept as entered, while recognized dates are displayed as `MMM d yyyy` and recognized date-times as `MMM d yyyy, h:mm a`.
 - Comparison: exact stdout, ignoring only CRLF versus LF line endings and a final newline.
 - Execution order: top to bottom; stop immediately after the first failure.
 - Session record: print the complete console input and output for every executed case.
@@ -366,7 +367,7 @@ ____________________________________________________________
 Hello! I'm Dobby, your mildly magical command goblin.
 What adventure shall we get into today?
     ____________________________________________________________
-     I don't know that command. Try list, todo <description>, deadline <description> /by <date/time>, event <description> /from <start> /to <end>, mark <number>, unmark <number>, delete <number>, or bye.
+     I don't know that command. Try list, todo <description>, deadline <description> /by <date/time>, event <description> /from <start> /to <end>, mark <number>, unmark <number>, delete <number>, on <date>, or bye.
     ____________________________________________________________
     ____________________________________________________________
      Bye for now! Dobby is off to polish the quest scrolls. Stay mighty!
@@ -536,6 +537,91 @@ What adventure shall we get into today?
     ____________________________________________________________
      Behold, brave adventurer! Here are your mighty quests:
      1.[T][ ] second task
+    ____________________________________________________________
+    ____________________________________________________________
+     Bye for now! Dobby is off to polish the quest scrolls. Stay mighty!
+    ____________________________________________________________
+```
+
+### TC-014 — Format an ISO deadline date
+
+- Aim: Verify that an ISO deadline date is understood as a date and displayed in a readable format.
+- Inputs (one command per line):
+
+```text
+deadline return book /by 2019-10-15
+list
+bye
+```
+
+- Expected output:
+
+```text
+____________________________________________________________
+     *        .        *        .        *
+      ____          _      _
+     |  _ \   ___  | |__  | |__   _   _
+     | | | | / _ \ | '_ \ | '_ \ | | | |
+     | |_| || (_) || |_) || |_) || |_| |
+     |____/  \___/ |_.__/ |_.__/  \__, |
+                                  |___/
+     .        *        .        *        .
+Hello! I'm Dobby, your mildly magical command goblin.
+What adventure shall we get into today?
+    ____________________________________________________________
+     Huzzah! A new quest has joined your magical task scroll:
+       [D][ ] return book (by: Oct 15 2019)
+     The quest scroll now holds 1 quest. Keep adventuring!
+    ____________________________________________________________
+    ____________________________________________________________
+     Behold, brave adventurer! Here are your mighty quests:
+     1.[D][ ] return book (by: Oct 15 2019)
+    ____________________________________________________________
+    ____________________________________________________________
+     Bye for now! Dobby is off to polish the quest scrolls. Stay mighty!
+    ____________________________________________________________
+```
+
+### TC-015 — List deadlines and events on a date
+
+- Aim: Verify that `on <date>` lists a deadline on that date and an event spanning that date.
+- Inputs (one command per line):
+
+```text
+deadline submit report /by 2019-10-15
+event orientation week /from 2019-10-14 /to 2019-10-16
+on 2019-10-15
+bye
+```
+
+- Expected output:
+
+```text
+____________________________________________________________
+     *        .        *        .        *
+      ____          _      _
+     |  _ \   ___  | |__  | |__   _   _
+     | | | | / _ \ | '_ \ | '_ \ | | | |
+     | |_| || (_) || |_) || |_) || |_| |
+     |____/  \___/ |_.__/ |_.__/  \__, |
+                                  |___/
+     .        *        .        *        .
+Hello! I'm Dobby, your mildly magical command goblin.
+What adventure shall we get into today?
+    ____________________________________________________________
+     Huzzah! A new quest has joined your magical task scroll:
+       [D][ ] submit report (by: Oct 15 2019)
+     The quest scroll now holds 1 quest. Keep adventuring!
+    ____________________________________________________________
+    ____________________________________________________________
+     Huzzah! A new quest has joined your magical task scroll:
+       [E][ ] orientation week (from: 2019-10-14 to: 2019-10-16)
+     The quest scroll now holds 2 quests. Keep adventuring!
+    ____________________________________________________________
+    ____________________________________________________________
+     Quests scheduled for Oct 15 2019:
+     1.[D][ ] submit report (by: Oct 15 2019)
+     2.[E][ ] orientation week (from: 2019-10-14 to: 2019-10-16)
     ____________________________________________________________
     ____________________________________________________________
      Bye for now! Dobby is off to polish the quest scrolls. Stay mighty!

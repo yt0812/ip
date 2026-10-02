@@ -1,10 +1,12 @@
 package dobby;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 import dobby.exception.DobbyException;
 import dobby.task.Deadline;
+import dobby.task.DateTimeParser;
 import dobby.task.Event;
 import dobby.task.Task;
 import dobby.task.Todo;
@@ -88,6 +90,11 @@ public class Dobby {
                 return;
             }
 
+            if (command.equals("on") || command.startsWith("on ")) {
+                printTasksOnDate(command, tasks);
+                return;
+            }
+
             if (command.equals("delete") || command.startsWith("delete ")) {
                 deleteTask(command, tasks);
                 return;
@@ -156,6 +163,73 @@ public class Dobby {
         }
 
         System.out.println("    " + SEPARATOR);
+    }
+
+    /**
+     * Prints deadlines and events that occur on the requested date.
+     *
+     * @param command the complete {@code on <date>} command.
+     * @param tasks the in-memory task list.
+     * @throws DobbyException when the requested date is missing or malformed.
+     */
+    private static void printTasksOnDate(String command, ArrayList<Task> tasks) throws DobbyException {
+        String dateText = command.substring("on".length()).trim();
+        LocalDate date = DateTimeParser.parseDate(dateText);
+
+        if (date == null) {
+            throw new DobbyException("The on command needs a date in yyyy-MM-dd format, for example on 2019-10-15.");
+        }
+
+        System.out.println("    " + SEPARATOR);
+        System.out.println("     Quests scheduled for " + DateTimeParser.formatDate(date) + ":");
+
+        boolean hasMatchingTask = false;
+        for (int i = 0; i < tasks.size(); i++) {
+            if (occursOnDate(tasks.get(i), date)) {
+                System.out.println("     " + (i + 1) + "." + tasks.get(i));
+                hasMatchingTask = true;
+            }
+        }
+
+        if (!hasMatchingTask) {
+            System.out.println("     No deadlines or events are scheduled for this date.");
+        }
+
+        System.out.println("    " + SEPARATOR);
+    }
+
+    /**
+     * Returns whether a deadline or event occurs on the supplied date.
+     *
+     * @param task the task to check.
+     * @param date the date being queried.
+     * @return whether the task occurs on the date.
+     */
+    private static boolean occursOnDate(Task task, LocalDate date) {
+        if (task instanceof Deadline deadline) {
+            return date.equals(deadline.getDate());
+        }
+
+        if (task instanceof Event event) {
+            return occursOnDate(event, date);
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns whether an event's inclusive date range contains the supplied date.
+     *
+     * @param event the event to check.
+     * @param date the date being queried.
+     * @return whether the event occurs on the date.
+     */
+    private static boolean occursOnDate(Event event, LocalDate date) {
+        LocalDate startDate = event.getStartDate();
+        LocalDate endDate = event.getEndDate();
+
+        return startDate != null && endDate != null
+                && !date.isBefore(startDate) && !date.isAfter(endDate);
     }
 
     /**
@@ -270,7 +344,7 @@ public class Dobby {
         throw new DobbyException(
                 "I don't know that command. Try list, todo <description>, deadline <description> /by <date/time>, "
                         + "event <description> /from <start> /to <end>, mark <number>, unmark <number>, "
-                        + "delete <number>, or bye.");
+                        + "delete <number>, on <date>, or bye.");
     }
 
     /**
