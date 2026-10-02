@@ -1,4 +1,4 @@
-package dobby;
+package dobby.task;
 
 /**
  * Represents a task in Dobby's task list.

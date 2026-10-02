@@ -2,6 +2,12 @@ package dobby;
 
 import java.util.Scanner;
 
+import dobby.exception.DobbyException;
+import dobby.task.Deadline;
+import dobby.task.Event;
+import dobby.task.Task;
+import dobby.task.Todo;
+
 /**
  * A simple command-line chatbot that keeps the user's tasks in memory.
  *
