@@ -3,6 +3,7 @@ package dobby;
 import java.io.IOException;
 import java.util.List;
 
+import dobby.command.ExitCommand;
 import dobby.exception.DobbyException;
 import dobby.storage.Storage;
 import dobby.task.Deadline;
@@ -54,13 +55,28 @@ public class Dobby {
         while (ui.hasNextCommand()) {
             String command = ui.readCommand();
 
-            if (command.equals("bye")) {
-                ui.showMessage("Bye for now! Dobby is off to polish the quest scrolls. Stay mighty!");
+            if (runExitCommand(command)) {
                 return;
             }
 
             taskCount = processCommand(command, tasks, taskCount);
         }
+    }
+
+    /**
+     * Runs the exit command when the user enters {@code bye}.
+     *
+     * @param command the complete command entered by the user.
+     * @return true when the command ends the session.
+     */
+    private boolean runExitCommand(String command) {
+        if (!command.equals("bye")) {
+            return false;
+        }
+
+        ExitCommand exitCommand = new ExitCommand();
+        exitCommand.execute(ui);
+        return exitCommand.isExit();
     }
 
     /**
