@@ -19,13 +19,19 @@ import dobby.task.Todo;
  */
 public final class Storage {
 
-    /** The relative path of the file used to persist tasks. */
-    private static final Path DATA_FILE = Path.of("data", "dobby.txt");
-
     /** The separator used between fields in a stored task record. */
     private static final String FIELD_SEPARATOR = " | ";
 
-    private Storage() {
+    /** The path of the file used to persist tasks. */
+    private final Path dataFile;
+
+    /**
+     * Creates a storage handler for the supplied file path.
+     *
+     * @param filePath the path of the file used to persist tasks.
+     */
+    public Storage(String filePath) {
+        dataFile = Path.of(filePath);
     }
 
     /**
@@ -39,14 +45,14 @@ public final class Storage {
      * @return the valid tasks read from the data file.
      * @throws IOException when the data file cannot be read.
      */
-    public static List<Task> loadTasks(int maximumTasks) throws IOException {
+    public List<Task> loadTasks(int maximumTasks) throws IOException {
         List<Task> tasks = new ArrayList<>();
 
-        if (!Files.exists(DATA_FILE)) {
+        if (!Files.exists(dataFile)) {
             return tasks;
         }
 
-        for (String line : Files.readAllLines(DATA_FILE, StandardCharsets.UTF_8)) {
+        for (String line : Files.readAllLines(dataFile, StandardCharsets.UTF_8)) {
             if (tasks.size() >= maximumTasks) {
                 break;
             }
@@ -66,8 +72,8 @@ public final class Storage {
      * @param tasks the task list to save.
      * @throws IOException when the data directory or file cannot be written.
      */
-    public static void saveTasks(TaskList tasks) throws IOException {
-        Path parent = DATA_FILE.getParent();
+    public void saveTasks(TaskList tasks) throws IOException {
+        Path parent = dataFile.getParent();
         if (parent != null) {
             Files.createDirectories(parent);
         }
@@ -77,7 +83,7 @@ public final class Storage {
             records.add(formatTask(task));
         }
 
-        Files.write(DATA_FILE, records, StandardCharsets.UTF_8,
+        Files.write(dataFile, records, StandardCharsets.UTF_8,
                 StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
     }
 
