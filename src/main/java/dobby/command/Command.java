@@ -1,6 +1,10 @@
 package dobby.command;
 
+import java.io.IOException;
+
 import dobby.exception.DobbyException;
+import dobby.storage.Storage;
+import dobby.task.TaskList;
 import dobby.ui.Ui;
 
 /**
@@ -9,12 +13,14 @@ import dobby.ui.Ui;
 public abstract class Command {
 
     /**
-     * Executes this command using the supplied user interface.
+     * Executes this command using the supplied application components.
      *
+     * @param tasks the task list managed by Dobby.
      * @param ui the user interface used to display command responses.
+     * @param storage the storage handler used to persist task changes.
      * @throws DobbyException when the command cannot be executed.
      */
-    public abstract void execute(Ui ui) throws DobbyException;
+    public abstract void execute(TaskList tasks, Ui ui, Storage storage) throws DobbyException;
 
     /**
      * Returns whether this command ends the Dobby session.
@@ -23,5 +29,20 @@ public abstract class Command {
      */
     public boolean isExit() {
         return false;
+    }
+
+    /**
+     * Saves the current task list and reports storage failures through the user interface.
+     *
+     * @param tasks the task list to save.
+     * @param ui the user interface used to report a save failure.
+     * @param storage the storage handler used to save the tasks.
+     */
+    protected void saveTasks(TaskList tasks, Ui ui, Storage storage) {
+        try {
+            storage.saveTasks(tasks);
+        } catch (IOException exception) {
+            ui.showSaveError();
+        }
     }
 }
