@@ -366,7 +366,7 @@ ____________________________________________________________
 Hello! I'm Dobby, your mildly magical command goblin.
 What adventure shall we get into today?
     ____________________________________________________________
-     I don't know that command. Try list, todo <description>, deadline <description> /by <date/time>, event <description> /from <start> /to <end>, mark <number>, unmark <number>, or bye.
+     I don't know that command. Try list, todo <description>, deadline <description> /by <date/time>, event <description> /from <start> /to <end>, mark <number>, unmark <number>, delete <number>, or bye.
     ____________________________________________________________
     ____________________________________________________________
      Bye for now! Dobby is off to polish the quest scrolls. Stay mighty!
@@ -485,6 +485,57 @@ What adventure shall we get into today?
     ____________________________________________________________
     ____________________________________________________________
      There are no tasks to unmark. Add one with todo <description> first.
+    ____________________________________________________________
+    ____________________________________________________________
+     Bye for now! Dobby is off to polish the quest scrolls. Stay mighty!
+    ____________________________________________________________
+```
+
+### TC-013 — Delete a task and renumber the remaining list
+
+- Aim: Verify that `delete <number>` removes the selected task, reports the new task count, and keeps the remaining list usable.
+- Inputs (one command per line):
+
+```text
+todo first task
+todo second task
+delete 1
+list
+bye
+```
+
+- Expected output:
+
+```text
+____________________________________________________________
+     *        .        *        .        *
+      ____          _      _
+     |  _ \   ___  | |__  | |__   _   _
+     | | | | / _ \ | '_ \ | '_ \ | | | |
+     | |_| || (_) || |_) || |_) || |_| |
+     |____/  \___/ |_.__/ |_.__/  \__, |
+                                  |___/
+     .        *        .        *        .
+Hello! I'm Dobby, your mildly magical command goblin.
+What adventure shall we get into today?
+    ____________________________________________________________
+     Huzzah! A new quest has joined your magical task scroll:
+       [T][ ] first task
+     The quest scroll now holds 1 quest. Keep adventuring!
+    ____________________________________________________________
+    ____________________________________________________________
+     Huzzah! A new quest has joined your magical task scroll:
+       [T][ ] second task
+     The quest scroll now holds 2 quests. Keep adventuring!
+    ____________________________________________________________
+    ____________________________________________________________
+     Poof! This quest has vanished from the magical task scroll:
+       [T][ ] first task
+     The quest scroll now holds 1 quest. Onward, brave adventurer!
+    ____________________________________________________________
+    ____________________________________________________________
+     Behold, brave adventurer! Here are your mighty quests:
+     1.[T][ ] second task
     ____________________________________________________________
     ____________________________________________________________
      Bye for now! Dobby is off to polish the quest scrolls. Stay mighty!
