@@ -3,6 +3,7 @@ package dobby.ui;
 import java.util.Scanner;
 
 import dobby.task.Task;
+import dobby.task.TaskList;
 
 /**
  * Handles Dobby's interaction with the user through the command line.
@@ -71,18 +72,17 @@ public class Ui {
     /**
      * Displays all stored tasks in the order in which they were entered.
      *
-     * @param tasks the in-memory task array.
-     * @param taskCount the number of occupied positions in {@code tasks}.
+     * @param tasks the task list to display.
      */
-    public void showTaskList(Task[] tasks, int taskCount) {
+    public void showTaskList(TaskList tasks) {
         System.out.println("    " + SEPARATOR);
         System.out.println("     Behold, brave adventurer! Here are your mighty quests:");
 
-        if (taskCount == 0) {
+        if (tasks.size() == 0) {
             System.out.println("     Your task pouch is empty - add a quest and let the adventure begin!");
         } else {
-            for (int i = 0; i < taskCount; i++) {
-                System.out.println("     " + (i + 1) + "." + tasks[i]);
+            for (int i = 0; i < tasks.size(); i++) {
+                System.out.println("     " + (i + 1) + "." + tasks.get(i));
             }
         }
 

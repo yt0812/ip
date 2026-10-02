@@ -1,7 +1,6 @@
 package dobby;
 
 import java.io.IOException;
-import java.util.List;
 
 import dobby.command.ExitCommand;
 import dobby.exception.DobbyException;
@@ -9,6 +8,7 @@ import dobby.storage.Storage;
 import dobby.task.Deadline;
 import dobby.task.Event;
 import dobby.task.Task;
+import dobby.task.TaskList;
 import dobby.task.Todo;
 import dobby.ui.Ui;
 
@@ -16,9 +16,6 @@ import dobby.ui.Ui;
  * A simple command-line chatbot that keeps the user's tasks in memory and on disk.
  */
 public class Dobby {
-
-    /** The maximum number of tasks that Dobby can remember in one session. */
-    private static final int MAX_TASKS = 100;
 
     /** Handles Dobby's interactions with the user. */
     private final Ui ui;
@@ -41,17 +38,16 @@ public class Dobby {
      * Starts Dobby, handles commands, and exits when the user enters {@code bye}.
      */
     public void run() {
-        Task[] tasks = new Task[MAX_TASKS];
-        int taskCount = loadTasks(tasks);
+        TaskList tasks = loadTasks();
 
         ui.showWelcome();
-        runCommandLoop(tasks, taskCount);
+        runCommandLoop(tasks);
     }
 
     /**
      * Reads commands and maintains the task list for the current session.
      */
-    private void runCommandLoop(Task[] tasks, int taskCount) {
+    private void runCommandLoop(TaskList tasks) {
         while (ui.hasNextCommand()) {
             String command = ui.readCommand();
 
@@ -59,7 +55,7 @@ public class Dobby {
                 return;
             }
 
-            taskCount = processCommand(command, tasks, taskCount);
+            processCommand(command, tasks);
         }
     }
 
@@ -80,69 +76,59 @@ public class Dobby {
     }
 
     /**
-     * Processes one command and returns the updated number of stored tasks.
+     * Processes one command and updates the supplied task list when needed.
      *
      * @param command the complete command entered by the user.
-     * @param tasks the in-memory task array.
-     * @param taskCount the number of occupied positions in {@code tasks}.
-     * @return the updated number of stored tasks
+     * @param tasks the task list currently managed by Dobby.
      */
-    private int processCommand(String command, Task[] tasks, int taskCount) {
+    private void processCommand(String command, TaskList tasks) {
         try {
             if (command.equals("list")) {
-                ui.showTaskList(tasks, taskCount);
-                return taskCount;
+                ui.showTaskList(tasks);
+                return;
             }
 
             if (command.equals("mark") || command.startsWith("mark ")) {
-                markTask(command, tasks, taskCount);
-                saveTasks(tasks, taskCount);
-                return taskCount;
+                markTask(command, tasks);
+                saveTasks(tasks);
+                return;
             }
 
             if (command.equals("unmark") || command.startsWith("unmark ")) {
-                unmarkTask(command, tasks, taskCount);
-                saveTasks(tasks, taskCount);
-                return taskCount;
+                unmarkTask(command, tasks);
+                saveTasks(tasks);
+                return;
             }
 
             Task task = parseTask(command);
-            int updatedTaskCount = addTask(task, tasks, taskCount);
-            saveTasks(tasks, updatedTaskCount);
-            return updatedTaskCount;
+            addTask(task, tasks);
+            saveTasks(tasks);
         } catch (DobbyException exception) {
             ui.showMessage(exception.getMessage());
-            return taskCount;
         }
     }
 
     /**
-     * Loads saved tasks into the supplied task array, starting empty when the file is unavailable.
+     * Loads saved tasks, starting empty when the file is unavailable.
      *
-     * @param tasks the array into which loaded tasks are copied.
-     * @return the number of tasks loaded.
+     * @return the loaded task list.
      */
-    private static int loadTasks(Task[] tasks) {
+    private static TaskList loadTasks() {
         try {
-            List<Task> loadedTasks = Storage.loadTasks(MAX_TASKS);
-            for (int i = 0; i < loadedTasks.size(); i++) {
-                tasks[i] = loadedTasks.get(i);
-            }
-            return loadedTasks.size();
+            return new TaskList(Storage.loadTasks(TaskList.MAX_TASKS));
         } catch (IOException exception) {
-            return 0;
+            return new TaskList();
         }
     }
 
     /**
      * Saves the current tasks and keeps the session running if the file cannot be written.
      *
-     * @param tasks the task array to save.
-     * @param taskCount the number of occupied positions in {@code tasks}.
+     * @param tasks the task list to save.
      */
-    private void saveTasks(Task[] tasks, int taskCount) {
+    private void saveTasks(TaskList tasks) {
         try {
-            Storage.saveTasks(tasks, taskCount);
+            Storage.saveTasks(tasks);
         } catch (IOException exception) {
             ui.showSaveError();
         }
@@ -152,49 +138,37 @@ public class Dobby {
      * Adds a parsed task when the task pouch still has room.
      *
      * @param task the parsed task to add.
-     * @param tasks the in-memory task array.
-     * @param taskCount the number of occupied positions in {@code tasks}.
-     * @return the updated number of stored tasks
+     * @param tasks the task list currently managed by Dobby.
      */
-    private int addTask(Task task, Task[] tasks, int taskCount) throws DobbyException {
-        if (taskCount >= MAX_TASKS) {
-            throw new DobbyException("Your task pouch is full at 100 quests. Start a new Dobby session before "
-                    + "adding another quest.");
-        }
-
-        tasks[taskCount] = task;
-        taskCount++;
-
-        ui.showTaskAdded(task, taskCount);
-        return taskCount;
+    private void addTask(Task task, TaskList tasks) throws DobbyException {
+        tasks.add(task);
+        ui.showTaskAdded(task, tasks.size());
     }
 
     /**
      * Marks the task selected by a {@code mark <number>} command as done.
      *
      * @param command the complete command entered by the user.
-     * @param tasks the in-memory task array.
-     * @param taskCount the number of occupied positions in {@code tasks}.
+     * @param tasks the task list currently managed by Dobby.
      */
-    private void markTask(String command, Task[] tasks, int taskCount) throws DobbyException {
-        int taskIndex = parseTaskIndex(command, "mark", taskCount);
-        tasks[taskIndex].markAsDone();
+    private void markTask(String command, TaskList tasks) throws DobbyException {
+        int taskIndex = parseTaskIndex(command, "mark", tasks.size());
+        tasks.get(taskIndex).markAsDone();
 
-        ui.showTaskMarked(tasks[taskIndex]);
+        ui.showTaskMarked(tasks.get(taskIndex));
     }
 
     /**
      * Reverses the done status of the task selected by an {@code unmark <number>} command.
      *
      * @param command the complete command entered by the user.
-     * @param tasks the in-memory task array.
-     * @param taskCount the number of occupied positions in {@code tasks}.
+     * @param tasks the task list currently managed by Dobby.
      */
-    private void unmarkTask(String command, Task[] tasks, int taskCount) throws DobbyException {
-        int taskIndex = parseTaskIndex(command, "unmark", taskCount);
-        tasks[taskIndex].markAsUndone();
+    private void unmarkTask(String command, TaskList tasks) throws DobbyException {
+        int taskIndex = parseTaskIndex(command, "unmark", tasks.size());
+        tasks.get(taskIndex).markAsUndone();
 
-        ui.showTaskUnmarked(tasks[taskIndex]);
+        ui.showTaskUnmarked(tasks.get(taskIndex));
     }
 
     /**

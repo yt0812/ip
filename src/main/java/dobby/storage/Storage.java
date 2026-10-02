@@ -11,6 +11,7 @@ import java.util.List;
 import dobby.task.Deadline;
 import dobby.task.Event;
 import dobby.task.Task;
+import dobby.task.TaskList;
 import dobby.task.Todo;
 
 /**
@@ -60,21 +61,20 @@ public final class Storage {
     }
 
     /**
-     * Saves the occupied portion of the task array to the data file.
+     * Saves the tasks in the task list to the data file.
      *
-     * @param tasks the array containing the tasks to save.
-     * @param taskCount the number of occupied positions in {@code tasks}.
+     * @param tasks the task list to save.
      * @throws IOException when the data directory or file cannot be written.
      */
-    public static void saveTasks(Task[] tasks, int taskCount) throws IOException {
+    public static void saveTasks(TaskList tasks) throws IOException {
         Path parent = DATA_FILE.getParent();
         if (parent != null) {
             Files.createDirectories(parent);
         }
 
         List<String> records = new ArrayList<>();
-        for (int i = 0; i < taskCount; i++) {
-            records.add(formatTask(tasks[i]));
+        for (Task task : tasks.getTasks()) {
+            records.add(formatTask(task));
         }
 
         Files.write(DATA_FILE, records, StandardCharsets.UTF_8,
