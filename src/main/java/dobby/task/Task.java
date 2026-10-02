@@ -62,4 +62,13 @@ public class Task {
     public String getDescription() {
         return description;
     }
+
+    /**
+     * Returns whether this task has been completed.
+     *
+     * @return whether the task is done.
+     */
+    public boolean isDone() {
+        return isDone;
+    }
 }

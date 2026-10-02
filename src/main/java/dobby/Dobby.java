@@ -1,18 +1,18 @@
 package dobby;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.Scanner;
 
 import dobby.exception.DobbyException;
+import dobby.storage.Storage;
 import dobby.task.Deadline;
 import dobby.task.Event;
 import dobby.task.Task;
 import dobby.task.Todo;
 
 /**
- * A simple command-line chatbot that keeps the user's tasks in memory.
- *
- * <p>The tasks are intentionally not written to disk. They last only for the
- * current run of Dobby, just like notes written on a magical temporary scroll.
+ * A simple command-line chatbot that keeps the user's tasks in memory and on disk.
  */
 public class Dobby {
 
@@ -32,8 +32,11 @@ public class Dobby {
      * @param args command-line arguments, which are not used.
      */
     public static void main(String[] args) {
+        Task[] tasks = new Task[MAX_TASKS];
+        int taskCount = loadTasks(tasks);
+
         printWelcome();
-        runCommandLoop();
+        runCommandLoop(tasks, taskCount);
     }
 
     /**
@@ -58,10 +61,7 @@ public class Dobby {
     /**
      * Reads commands and maintains the task list for the current session.
      */
-    private static void runCommandLoop() {
-        Task[] tasks = new Task[MAX_TASKS];
-        int taskCount = 0;
-
+    private static void runCommandLoop(Task[] tasks, int taskCount) {
         Scanner scanner = new Scanner(System.in);
         while (scanner.hasNextLine()) {
             String command = scanner.nextLine();
@@ -92,19 +92,55 @@ public class Dobby {
 
             if (command.equals("mark") || command.startsWith("mark ")) {
                 markTask(command, tasks, taskCount);
+                saveTasks(tasks, taskCount);
                 return taskCount;
             }
 
             if (command.equals("unmark") || command.startsWith("unmark ")) {
                 unmarkTask(command, tasks, taskCount);
+                saveTasks(tasks, taskCount);
                 return taskCount;
             }
 
             Task task = parseTask(command);
-            return addTask(task, tasks, taskCount);
+            int updatedTaskCount = addTask(task, tasks, taskCount);
+            saveTasks(tasks, updatedTaskCount);
+            return updatedTaskCount;
         } catch (DobbyException exception) {
             printMessage(exception.getMessage());
             return taskCount;
+        }
+    }
+
+    /**
+     * Loads saved tasks into the supplied task array, starting empty when the file is unavailable.
+     *
+     * @param tasks the array into which loaded tasks are copied.
+     * @return the number of tasks loaded.
+     */
+    private static int loadTasks(Task[] tasks) {
+        try {
+            List<Task> loadedTasks = Storage.loadTasks(MAX_TASKS);
+            for (int i = 0; i < loadedTasks.size(); i++) {
+                tasks[i] = loadedTasks.get(i);
+            }
+            return loadedTasks.size();
+        } catch (IOException exception) {
+            return 0;
+        }
+    }
+
+    /**
+     * Saves the current tasks and keeps the session running if the file cannot be written.
+     *
+     * @param tasks the task array to save.
+     * @param taskCount the number of occupied positions in {@code tasks}.
+     */
+    private static void saveTasks(Task[] tasks, int taskCount) {
+        try {
+            Storage.saveTasks(tasks, taskCount);
+        } catch (IOException exception) {
+            printMessage("I couldn't save the quest scroll right now, but your changes remain in this session.");
         }
     }
 

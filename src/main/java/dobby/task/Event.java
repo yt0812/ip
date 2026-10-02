@@ -24,6 +24,24 @@ public class Event extends Task {
         this.end = end;
     }
 
+    /**
+     * Returns the date or time when this event starts.
+     *
+     * @return the event start text.
+     */
+    public String getStart() {
+        return start;
+    }
+
+    /**
+     * Returns the date or time when this event ends.
+     *
+     * @return the event end text.
+     */
+    public String getEnd() {
+        return end;
+    }
+
     @Override
     public String toString() {
         return "[E][" + getStatusIcon() + "] " + description

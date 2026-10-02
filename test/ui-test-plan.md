@@ -4,8 +4,10 @@
 
 - Application: `dobby.Dobby`.
 - Java version: 25.
-- Compile command: `javac -d <temporary-build-dir> src\main\java\dobby\Dobby.java src\main\java\dobby\task\*.java src\main\java\dobby\exception\*.java`.
+- Compile command: `javac -d <temporary-build-dir> src\main\java\dobby\Dobby.java src\main\java\dobby\task\*.java src\main\java\dobby\exception\*.java src\main\java\dobby\storage\*.java`.
 - Run command: `java -cp <temporary-build-dir> dobby.Dobby`.
+- Persistence file: `data\dobby.txt`, created relative to the application's working directory.
+- Test isolation: start each independent test case with a clean working directory or without a saved data file.
 - Input format: one command per line, in the order shown in each test case.
 - Typed task syntax: `todo <description>`, `deadline <description> /by <date/time>`, and `event <description> /from <start> /to <end>`.
 - Date/time text is kept as entered, so natural values such as `Sunday`, `Mon 2pm`, and `11/10/2019 5pm` are valid.
