@@ -2,6 +2,7 @@ package dobby;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.Scanner;
 
 import dobby.exception.DobbyException;
@@ -90,6 +91,11 @@ public class Dobby {
                 return;
             }
 
+            if (command.equals("find") || command.startsWith("find ")) {
+                printMatchingTasks(command, tasks);
+                return;
+            }
+
             if (command.equals("on") || command.startsWith("on ")) {
                 printTasksOnDate(command, tasks);
                 return;
@@ -160,6 +166,41 @@ public class Dobby {
             for (int i = 0; i < tasks.size(); i++) {
                 System.out.println("     " + (i + 1) + "." + tasks.get(i));
             }
+        }
+
+        System.out.println("    " + SEPARATOR);
+    }
+
+    /**
+     * Prints tasks whose descriptions contain the requested keyword.
+     *
+     * @param command the complete {@code find <keyword>} command.
+     * @param tasks the in-memory task list.
+     * @throws DobbyException when the keyword is missing.
+     */
+    private static void printMatchingTasks(String command, ArrayList<Task> tasks) throws DobbyException {
+        String keyword = command.substring("find".length()).trim();
+
+        if (keyword.isEmpty()) {
+            throw new DobbyException("The finding spell needs a keyword. Try find <keyword>, for example find book.");
+        }
+
+        String normalizedKeyword = keyword.toLowerCase(Locale.ROOT);
+        boolean hasMatchingTask = false;
+
+        System.out.println("    " + SEPARATOR);
+        System.out.println("     Aha! I found these quests hiding in your magical task scroll:");
+
+        for (int i = 0; i < tasks.size(); i++) {
+            Task task = tasks.get(i);
+            if (task.getDescription().toLowerCase(Locale.ROOT).contains(normalizedKeyword)) {
+                System.out.println("     " + (i + 1) + "." + task);
+                hasMatchingTask = true;
+            }
+        }
+
+        if (!hasMatchingTask) {
+            System.out.println("     No quests matched that clue. Try another keyword, brave adventurer!");
         }
 
         System.out.println("    " + SEPARATOR);
@@ -344,7 +385,7 @@ public class Dobby {
         throw new DobbyException(
                 "I don't know that command. Try list, todo <description>, deadline <description> /by <date/time>, "
                         + "event <description> /from <start> /to <end>, mark <number>, unmark <number>, "
-                        + "delete <number>, on <date>, or bye.");
+                        + "delete <number>, on <date>, find <keyword>, or bye.");
     }
 
     /**

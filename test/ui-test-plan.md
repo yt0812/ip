@@ -367,7 +367,7 @@ ____________________________________________________________
 Hello! I'm Dobby, your mildly magical command goblin.
 What adventure shall we get into today?
     ____________________________________________________________
-     I don't know that command. Try list, todo <description>, deadline <description> /by <date/time>, event <description> /from <start> /to <end>, mark <number>, unmark <number>, delete <number>, on <date>, or bye.
+     I don't know that command. Try list, todo <description>, deadline <description> /by <date/time>, event <description> /from <start> /to <end>, mark <number>, unmark <number>, delete <number>, on <date>, find <keyword>, or bye.
     ____________________________________________________________
     ____________________________________________________________
      Bye for now! Dobby is off to polish the quest scrolls. Stay mighty!
@@ -622,6 +622,52 @@ What adventure shall we get into today?
      Quests scheduled for Oct 15 2019:
      1.[D][ ] submit report (by: Oct 15 2019)
      2.[E][ ] orientation week (from: 2019-10-14 to: 2019-10-16)
+    ____________________________________________________________
+    ____________________________________________________________
+     Bye for now! Dobby is off to polish the quest scrolls. Stay mighty!
+    ____________________________________________________________
+```
+
+### TC-016 — Find tasks by a keyword
+
+- Aim: Verify that `find <keyword>` displays tasks whose descriptions contain the keyword and preserves their original task numbers.
+- Inputs (one command per line):
+
+```text
+todo read book
+deadline return book /by June 6th
+find book
+bye
+```
+
+- Expected output:
+
+```text
+____________________________________________________________
+     *        .        *        .        *
+      ____          _      _
+     |  _ \   ___  | |__  | |__   _   _
+     | | | | / _ \ | '_ \ | '_ \ | | | |
+     | |_| || (_) || |_) || |_) || |_| |
+     |____/  \___/ |_.__/ |_.__/  \__, |
+                                  |___/
+     .        *        .        *        .
+Hello! I'm Dobby, your mildly magical command goblin.
+What adventure shall we get into today?
+    ____________________________________________________________
+     Huzzah! A new quest has joined your magical task scroll:
+       [T][ ] read book
+     The quest scroll now holds 1 quest. Keep adventuring!
+    ____________________________________________________________
+    ____________________________________________________________
+     Huzzah! A new quest has joined your magical task scroll:
+       [D][ ] return book (by: June 6th)
+     The quest scroll now holds 2 quests. Keep adventuring!
+    ____________________________________________________________
+    ____________________________________________________________
+     Aha! I found these quests hiding in your magical task scroll:
+     1.[T][ ] read book
+     2.[D][ ] return book (by: June 6th)
     ____________________________________________________________
     ____________________________________________________________
      Bye for now! Dobby is off to polish the quest scrolls. Stay mighty!
