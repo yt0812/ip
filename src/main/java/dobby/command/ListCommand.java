@@ -9,6 +9,10 @@ import dobby.ui.Ui;
  */
 public final class ListCommand extends Command {
 
+    /** Creates a command that displays the task list. */
+    public ListCommand() {
+    }
+
     /**
      * Displays the current task list.
      *
