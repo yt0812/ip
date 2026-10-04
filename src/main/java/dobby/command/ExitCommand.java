@@ -9,6 +9,10 @@ import dobby.ui.Ui;
  */
 public final class ExitCommand extends Command {
 
+    /** Creates an exit command. */
+    public ExitCommand() {
+    }
+
     /**
      * Executes the exit response.
      *
