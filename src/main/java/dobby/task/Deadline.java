@@ -90,6 +90,11 @@ public class Deadline extends Task {
         return dateTime;
     }
 
+    /**
+     * Returns this deadline in the compact format used by the user interface.
+     *
+     * @return the deadline type icon, completion icon, description, and due time.
+     */
     @Override
     public String toString() {
         return "[D][" + getStatusIcon() + "] " + description + " (by: " + getBy() + ")";

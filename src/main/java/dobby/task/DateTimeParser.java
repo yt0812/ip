@@ -33,6 +33,7 @@ public final class DateTimeParser {
         DISPLAY_DATE_TIME_FORMAT
     };
 
+    /** Prevents instantiation of this utility class. */
     private DateTimeParser() {
     }
 

@@ -17,6 +17,7 @@ import dobby.task.Todo;
  */
 public final class Parser {
 
+    /** Prevents instantiation of this utility class. */
     private Parser() {
     }
 

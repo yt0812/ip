@@ -62,6 +62,11 @@ public class Event extends Task {
         return DateTimeParser.parseDate(end);
     }
 
+    /**
+     * Returns this event in the compact format used by the user interface.
+     *
+     * @return the event type icon, completion icon, description, and date range.
+     */
     @Override
     public String toString() {
         return "[E][" + getStatusIcon() + "] " + description
