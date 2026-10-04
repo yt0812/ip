@@ -193,7 +193,7 @@ public class Dobby {
 
         for (int i = 0; i < tasks.size(); i++) {
             Task task = tasks.get(i);
-            if (task.getDescription().toLowerCase(Locale.ROOT).contains(normalizedKeyword)) {
+            if (matchesKeyword(task, normalizedKeyword)) {
                 System.out.println("     " + (i + 1) + "." + task);
                 hasMatchingTask = true;
             }
@@ -204,6 +204,17 @@ public class Dobby {
         }
 
         System.out.println("    " + SEPARATOR);
+    }
+
+    /**
+     * Returns whether a task description contains the supplied keyword, ignoring letter case.
+     *
+     * @param task the task whose description is searched.
+     * @param normalizedKeyword the lower-case keyword to search for.
+     * @return true when the task description contains the keyword.
+     */
+    private static boolean matchesKeyword(Task task, String normalizedKeyword) {
+        return task.getDescription().toLowerCase(Locale.ROOT).contains(normalizedKeyword);
     }
 
     /**
